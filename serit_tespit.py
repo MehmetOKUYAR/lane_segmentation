@@ -6,17 +6,12 @@ import pandas as pd
 import numpy as np
 
 
-model = load_model("/home/toyota/Desktop/line_segmentation/Unet_weight/line_early_unet.h5", compile=False)
+model = load_model("Desktop/line_segmentation/Unet_weight/line_early_unet.h5", compile=False)
 
 
 cap = cv2.VideoCapture("video/yarisma.mp4")
 if cap.isOpened() == 0:
     exit(-1)
-
-
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('your_video.avi', fourcc, 10.0, (1700,800))
-
 
 while True :
     retval, frame = cap.read()
@@ -44,6 +39,7 @@ while True :
     #segmentasyon[0:search_topseg, 0:w] = 0
 
 
+    # image roi in front of the camera
     search_top0 = h//2 
     search_bot0 = h//2 + 100
     mask0[0:search_top0, 0:w] = 0
@@ -64,15 +60,16 @@ while True :
     search = h//2 + 150
     mask6[0:search, 0:w] = 0
 
-
+    # image roi right of the camera
     sagserit[:sag_roi_y, :] = 0
     sagserit[sag_roi_y:, :sag_roi_x] = 0
 
 
-    
+    # image roi left on the camera
     solserit[:sol_roi_y, :] = 0
     solserit[sol_roi_y:, sol_roi_x:] = 0
 
+    # center line detections
     M = cv2.moments(solserit) 
     N = cv2.moments(sagserit)
 
@@ -81,6 +78,7 @@ while True :
 
     S = cv2.moments(mask0)
     
+    # lane detection imshow
     pred *=255
     pred = pred.astype(np.uint8)
     red=np.zeros((image.shape[0],image.shape[1],image.shape[2]),np.uint8)
@@ -113,8 +111,7 @@ while True :
     
 
     image= cv2.resize(image,(1700,800))
-    out.write(image)
-    cv2.imshow('momentolu',image)
+    cv2.imshow('lane segmentation',image)
     if cv2.waitKey(1) == ord('q'):
         break
 
